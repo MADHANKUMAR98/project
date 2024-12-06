@@ -1,0 +1,186 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>ebs-spring-boot</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Electricity Billing System</name>
+    <description>Spring Boot Electricity Billing System with advanced functionalities</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <!-- Spring Boot Starter Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starter JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Oracle JDBC Driver -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>21.9.0.0</version>
+        </dependency>
+
+        <!-- Spring Boot Starter Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Spring Boot DevTools -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+
+
+
+To implement **Swagger UI** for easy testing and documentation of your APIs, you can follow these steps:
+
+---
+
+### **Add Swagger Dependencies**
+
+In your `pom.xml`, add the following dependencies for Swagger:
+
+```xml
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.2.0</version>
+</dependency>
+```
+
+---
+
+### **Configuration Class**
+
+Create a configuration class to customize Swagger documentation if needed. However, for basic setup, this is optional as SpringDoc automatically configures Swagger UI for you.
+
+```java
+package com.ebs.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Electricity Billing System API")
+                        .version("1.0.0")
+                        .description("API documentation for the Electricity Billing System application.")
+                        .license(new License().name("Apache 2.0").url("http://springdoc.org")));
+    }
+}
+```
+
+---
+
+### **Accessing Swagger UI**
+
+Once the application is running, you can access Swagger UI at:
+
+- **URL**: `http://localhost:8080/swagger-ui.html`
+
+This UI will display all your APIs categorized by their controllers (Admin and Customer).
+
+---
+
+### **Annotations for Enhanced Documentation**
+
+You can enhance the API documentation by adding annotations to your controller methods.
+
+#### Example:
+```java
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@RestController
+@RequestMapping("/admin")
+@Tag(name = "Admin Controller", description = "APIs for Admin operations")
+public class AdminController {
+
+    @PostMapping("/add-customer")
+    @Operation(summary = "Add a new customer", description = "Allows admin to add a new customer by providing customer details.")
+    public ResponseEntity<String> addCustomer(@RequestBody CustomerPojo customerPojo) {
+        // Implementation
+        return ResponseEntity.ok("Customer added successfully");
+    }
+}
+```
+
+---
+
+### **Testing in Swagger UI**
+
+1. Once you access Swagger UI, all APIs will be listed by controller (e.g., Admin APIs, Customer APIs).
+2. Each API endpoint will have:
+   - **Summary**: A brief description.
+   - **Try it out**: Option to execute the API directly within the UI.
+   - **Request Body**: Auto-generated fields for input.
+   - **Response**: The expected output or error messages.
+
+---
+
+### **Benefits**
+1. **Interactive API Documentation**: Allows you to test and explore APIs directly.
+2. **Quick Debugging**: Test endpoints without using external tools like Postman.
+3. **Developer-Friendly**: Improves collaboration and onboarding for new developers.
+
+This setup integrates Swagger seamlessly into your Spring Boot application, making API management and testing significantly easier!
