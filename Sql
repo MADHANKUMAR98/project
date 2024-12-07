@@ -1,0 +1,20 @@
+CREATE TABLE EBS_billl (
+    bill_id VARCHAR(10) PRIMARY KEY,
+    customer_id VARCHAR(6),
+    electricity_used DOUBLE,
+    bill_amount DOUBLE,
+    bill_date VARCHAR(20),
+    due_date VARCHAR(20),
+    is_paid BOOLEAN,
+    FOREIGN KEY (customer_id) REFERENCES EBS_customerl(customer_id)
+);
+CREATE TABLE EBS_paymentl (
+    payment_id VARCHAR(10) PRIMARY KEY,
+    customer_id VARCHAR(6),
+    bill_id VARCHAR(10),
+    payment_date VARCHAR(20),
+    payment_method VARCHAR(20),
+    amount_paid DOUBLE,
+    FOREIGN KEY (customer_id) REFERENCES EBS_customerl(customer_id),
+    FOREIGN KEY (bill_id) REFERENCES EBS_billl(bill_id)
+);
