@@ -138,3 +138,18 @@ The **front-end components** for a project depend on its scope and purpose. For 
 ---
 
 Would you like a detailed layout or sample code for any specific component?
+
+
+@SpringBootApplication
+@OpenAPIDefinition(
+    info = @Info(
+        title = "Electricity Billing System API",
+        version = "1.0",
+        description = "API documentation for the Electricity Billing System"
+    )
+)
+public class ElectricityBillingSystemApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ElectricityBillingSystemApplication.class, args);
+    }
+}
