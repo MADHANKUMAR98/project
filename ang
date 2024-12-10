@@ -1,0 +1,213 @@
+Converting the React code to Angular involves rewriting it using Angular concepts such as components, services, forms, and dependency injection. Here's the equivalent Angular implementation:
+
+### Angular Register Component
+
+1. **Install Required Packages**
+   ```bash
+   npm install --save @angular/forms @angular/common
+   npm install --save angular-password-validator
+   ```
+
+2. **Component Code**
+
+   ```typescript
+   import { Component, OnInit } from '@angular/core';
+   import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+   import { HttpClient } from '@angular/common/http';
+   import { Router } from '@angular/router';
+
+   @Component({
+     selector: 'app-register',
+     templateUrl: './register.component.html',
+     styleUrls: ['./register.component.css'],
+   })
+   export class RegisterComponent implements OnInit {
+     registerForm: FormGroup;
+     message: string = '';
+     error: string = '';
+     isLoading: boolean = false;
+     showOtpSplash: boolean = false;
+     showSplash: boolean = false;
+
+     constructor(
+       private fb: FormBuilder,
+       private http: HttpClient,
+       private router: Router
+     ) {
+       this.registerForm = this.fb.group({
+         firstName: ['', [Validators.required]],
+         lastName: ['', [Validators.required]],
+         aadharId: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(14)]],
+         phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+         email: ['', [Validators.required, Validators.email]],
+         password: ['', [Validators.required, Validators.minLength(8)]],
+         confirmPassword: ['', [Validators.required]],
+         otp: [''],
+       });
+     }
+
+     ngOnInit(): void {}
+
+     // Format Aadhar ID
+     formatAadhar(value: string): string {
+       const onlyDigits = value.replace(/\D/g, '');
+       return onlyDigits
+         .replace(/(\d{4})(\d)/, '$1 $2')
+         .replace(/(\d{4}) (\d{4})(\d)/, '$1 $2 $3');
+     }
+
+     // Handle input change
+     onInputChange(event: any, field: string): void {
+       let value = event.target.value;
+       if (field === 'aadharId') {
+         value = this.formatAadhar(value);
+       }
+       this.registerForm.get(field)?.setValue(value);
+     }
+
+     // Submit form
+     async handleSubmit(): Promise<void> {
+       this.error = '';
+       this.message = '';
+       this.isLoading = true;
+
+       const formValue = this.registerForm.value;
+
+       if (formValue.password !== formValue.confirmPassword) {
+         this.error = 'Passwords do not match.';
+         this.isLoading = false;
+         return;
+       }
+
+       try {
+         const response = await this.http
+           .post('http://localhost:8080/api/get/otp/sendOtp', {
+             email: formValue.email,
+           })
+           .toPromise();
+
+         this.showOtpSplash = true;
+         this.message = 'OTP sent to your email.';
+       } catch (err: any) {
+         this.error = 'Error sending OTP: ' + (err.error?.message || err.message);
+       } finally {
+         this.isLoading = false;
+       }
+     }
+
+     // OTP Submit
+     async handleOtpSubmit(): Promise<void> {
+       this.error = '';
+       this.message = '';
+       this.isLoading = true;
+
+       const formValue = this.registerForm.value;
+
+       try {
+         const otpResponse = await this.http
+           .post('http://localhost:8080/users/otp/validate', {
+             email: formValue.email,
+             otp: formValue.otp,
+           })
+           .toPromise();
+
+         const registrationResponse = await this.http
+           .post(
+             'http://localhost:8080/users/register',
+             {
+               user: {
+                 ...formValue,
+                 aadharId: formValue.aadharId.replace(/\s/g, ''),
+               },
+               otpValidationRequest: { email: formValue.email, otp: formValue.otp },
+             }
+           )
+           .toPromise();
+
+         this.showSplash = true;
+         this.message = 'User registered successfully.';
+       } catch (err: any) {
+         this.error = 'Error during registration: ' + (err.error?.message || err.message);
+       } finally {
+         this.isLoading = false;
+       }
+     }
+   }
+   ```
+
+3. **Template (HTML)**
+
+   ```html
+   <div class="container">
+     <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()">
+       <div *ngIf="isLoading" class="loader"></div>
+       <h2>Register</h2>
+
+       <!-- Input Fields -->
+       <div>
+         <label for="firstName">First Name</label>
+         <input
+           id="firstName"
+           formControlName="firstName"
+           type="text"
+           (input)="onInputChange($event, 'firstName')"
+         />
+       </div>
+
+       <div>
+         <label for="lastName">Last Name</label>
+         <input
+           id="lastName"
+           formControlName="lastName"
+           type="text"
+           (input)="onInputChange($event, 'lastName')"
+         />
+       </div>
+
+       <div>
+         <label for="email">Email</label>
+         <input id="email" formControlName="email" type="email" />
+       </div>
+
+       <div>
+         <label for="phoneNumber">Phone Number</label>
+         <input
+           id="phoneNumber"
+           formControlName="phoneNumber"
+           type="text"
+           (input)="onInputChange($event, 'phoneNumber')"
+         />
+       </div>
+
+       <div>
+         <label for="aadharId">Aadhar ID</label>
+         <input
+           id="aadharId"
+           formControlName="aadharId"
+           type="text"
+           (input)="onInputChange($event, 'aadharId')"
+         />
+       </div>
+
+       <div>
+         <label for="password">Password</label>
+         <input id="password" formControlName="password" type="password" />
+       </div>
+
+       <div>
+         <label for="confirmPassword">Confirm Password</label>
+         <input id="confirmPassword" formControlName="confirmPassword" type="password" />
+       </div>
+
+       <button type="submit">Register</button>
+     </form>
+
+     <div *ngIf="message" class="success-message">{{ message }}</div>
+     <div *ngIf="error" class="error-message">{{ error }}</div>
+   </div>
+   ```
+
+### Notes:
+1. Replace API URLs with your backend endpoints.
+2. Add required styles in `register.component.css`.
+3. This version uses Angular's reactive forms, dependency injection for the HTTP client, and a structured approach to handle validations and API calls.
