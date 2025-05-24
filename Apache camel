@@ -105,3 +105,136 @@ public class CamelS3Application {
         SpringApplication.run(CamelS3Application.class, args);
     }
 }
+
+
+
+To get your AWS S3 access credentials (Access Key & Secret Key), follow this step-by-step guide. These credentials allow your Apache Camel Spring Boot app to access S3 securely.
+
+
+---
+
+Step-by-Step: Get AWS S3 Access Key & Secret Key
+
+> Important: Use an IAM user for programmatic access — not your root account.
+
+
+
+
+---
+
+Step 1: Sign in to AWS Console
+
+1. Go to: https://aws.amazon.com/
+
+
+2. Click Sign In to the Console
+
+
+3. Use your AWS root account (or IAM user if already created)
+
+
+
+
+---
+
+Step 2: Open the IAM Console
+
+1. Once logged in, go to the Search bar at the top
+
+
+2. Type IAM and click on the IAM (Identity and Access Management) service
+
+
+
+
+---
+
+Step 3: Create an IAM User
+
+1. In the IAM dashboard, click Users on the left sidebar
+
+
+2. Click the "Add users" button
+
+
+
+Step-by-step in the wizard:
+
+User name: camel-s3-user
+
+Access type:
+
+Check Programmatic access
+
+
+
+Click Next: Permissions
+
+
+---
+
+Step 4: Attach Permissions
+
+You need to allow this user to access S3.
+
+Choose:
+Attach policies directly
+
+Then:
+
+Search for: AmazonS3FullAccess
+
+Check the box
+
+
+Click Next until the last step and then Create user
+
+
+---
+
+Step 5: Get Access Key & Secret Key
+
+Once the user is created:
+
+You’ll see a Success screen
+
+Click Download .csv or Copy the:
+
+Access key ID
+
+Secret access key
+
+
+
+> Note: You will not be able to view the secret key again later. So download or save it securely.
+
+
+
+
+---
+
+Step 6: Use the Credentials in Spring Boot App
+
+In application.properties:
+
+camel.component.aws2-s3.access-key=YOUR_ACCESS_KEY
+camel.component.aws2-s3.secret-key=YOUR_SECRET_KEY
+camel.component.aws2-s3.region=us-east-1
+
+
+---
+
+Optional: Secure via Environment Variables
+
+You can also set these keys using environment variables for security:
+
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+
+And remove them from application.properties.
+
+
+---
+
+Let me know if you want to restrict the user to only one bucket, or want a ZIP of the project preconfigured for Eclipse.
+
