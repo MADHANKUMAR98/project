@@ -1,0 +1,95 @@
+To move a file to Amazon S3 using a Recipient List in Apache Camel with Spring Boot, you can use the AWS2 S3 Camel component along with the recipient list EIP. Below is a simple working example.
+
+
+---
+
+1. Add Dependencies (Maven)
+
+In your pom.xml:
+
+<dependencies>
+    <!-- Camel core and Spring Boot starter -->
+    <dependency>
+        <groupId>org.apache.camel.springboot</groupId>
+        <artifactId>camel-spring-boot-starter</artifactId>
+        <version>4.4.0</version>
+    </dependency>
+
+    <!-- Camel AWS2 S3 Component -->
+    <dependency>
+        <groupId>org.apache.camel.springboot</groupId>
+        <artifactId>camel-aws2-s3-starter</artifactId>
+        <version>4.4.0</version>
+    </dependency>
+
+    <!-- AWS SDK v2 -->
+    <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>s3</artifactId>
+    </dependency>
+</dependencies>
+
+
+---
+
+2. application.properties
+
+camel.component.aws2-s3.access-key=your-access-key
+camel.component.aws2-s3.secret-key=your-secret-key
+camel.component.aws2-s3.region=your-region
+camel.component.aws2-s3.use-default-credentials-provider=false
+camel.component.aws2-s3.auto-create-bucket=true
+
+
+---
+
+3. Camel Route using Recipient List
+
+Create a route that uses the recipient list to dynamically route the file to an S3 bucket:
+
+import org.apache.camel.builder.RouteBuilder;
+import org.springframework.stereotype.Component;
+
+@Component
+public class FileToS3Route extends RouteBuilder {
+
+    @Override
+    public void configure() throws Exception {
+        from("file:input?noop=true")
+            .log("File picked up: ${header.CamelFileName}")
+            .setHeader("s3BucketName", constant("my-s3-bucket"))
+            .recipientList(simple("aws2-s3://${header.s3BucketName}?autoCreateBucket=true"))
+            .log("File uploaded to S3: ${header.CamelFileName}");
+    }
+}
+
+
+---
+
+4. Directory Structure
+
+Place your input files in the input/ directory in your project root (or change the path in the route).
+
+
+
+---
+
+5. How Recipient List Works Here
+
+recipientList(simple("aws2-s3://${header.s3BucketName}")) allows you to dynamically decide the S3 bucket (and you can expand this for multiple destinations).
+
+This makes it flexible to decide the recipient endpoint at runtime.
+
+
+
+---
+
+Let me know if:
+
+You want to move files to multiple S3 buckets.
+
+You’re using YAML config instead of properties.
+
+You want to read bucket names from a DB or config file.
+
+
