@@ -93,3 +93,15 @@ You’re using YAML config instead of properties.
 You want to read bucket names from a DB or config file.
 
 
+
+package com.example.camels3;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CamelS3Application {
+    public static void main(String[] args) {
+        SpringApplication.run(CamelS3Application.class, args);
+    }
+}
