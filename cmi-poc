@@ -236,3 +236,84 @@ To convert multiple JSON files, wrap the logic inside a loop scanning the source
 Would you like that version too (convert multiple JSON files automatically)?
 
 
+
+
+
+
+
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class JsonToXmlAutoConverter {
+
+    private static final Logger LOGGER = Logger.getLogger(JsonToXmlAutoConverter.class.getName());
+
+    private static final String SOURCE_DIR = "sourceFolder";
+    private static final String DESTINATION_DIR = "destinationFolder";
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final XmlMapper XML_MAPPER = new XmlMapper();
+
+    public static void main(String[] args) {
+        Path sourcePath = Paths.get(SOURCE_DIR);
+        Path destPath = Paths.get(DESTINATION_DIR);
+
+        try {
+            Files.createDirectories(sourcePath);
+            Files.createDirectories(destPath);
+            LOGGER.info("Watching folder: " + sourcePath.toAbsolutePath());
+
+            WatchService watchService = FileSystems.getDefault().newWatchService();
+            sourcePath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+
+            while (true) {
+                WatchKey key = watchService.take(); // Blocks until an event is available
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    WatchEvent.Kind<?> kind = event.kind();
+
+                    if (kind == StandardWatchEventKinds.OVERFLOW) continue;
+
+                    @SuppressWarnings("unchecked")
+                    WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                    Path filename = ev.context();
+                    Path jsonFilePath = sourcePath.resolve(filename);
+
+                    if (filename.toString().endsWith(".json")) {
+                        try {
+                            convertJsonToXml(jsonFilePath, destPath);
+                        } catch (Exception e) {
+                            LOGGER.log(Level.SEVERE, "Conversion failed for: " + filename, e);
+                        }
+                    }
+                }
+
+                boolean valid = key.reset();
+                if (!valid) break;
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in folder monitoring", e);
+        }
+    }
+
+    private static void convertJsonToXml(Path jsonFile, Path destinationFolder) throws IOException {
+        JsonNode jsonNode = JSON_MAPPER.readTree(jsonFile.toFile());
+
+        String xmlContent = XML_MAPPER.writerWithDefaultPrettyPrinter()
+                .withRootName("Document")
+                .writeValueAsString(jsonNode);
+
+        String outputFileName = jsonFile.getFileName().toString().replace(".json", ".xml");
+        Path outputPath = destinationFolder.resolve(outputFileName);
+        Files.write(outputPath, xmlContent.getBytes());
+
+        LOGGER.info("✅ Converted: " + jsonFile.getFileName() + " → " + outputPath.getFileName());
+    }
+}
