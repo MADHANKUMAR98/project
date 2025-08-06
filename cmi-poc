@@ -137,3 +137,102 @@ Adding timestamps or metadata
 
 Would you like to make this into a Spring Boot command-line utility, or add a GUI for uploading files? Let me know!
 
+
+
+
+
+Here's a full Java program that reads a JSON file from a source folder, converts it to XML, and writes it to a destination folder.
+
+
+---
+
+✅ Requirements:
+
+1. Java SDK 8 or above.
+
+
+2. External libraries:
+
+org.json (for JSON parsing)
+
+json.org also supports XML conversion via org.json.XML
+
+
+
+
+You can add this dependency via Maven or manually include the jar file:
+
+<!-- Add to your pom.xml if using Maven -->
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20240303</version> <!-- Or latest -->
+</dependency>
+
+
+---
+
+📁 Folder Structure Example:
+
+sourceFolder/data.json
+
+Output will go to: destinationFolder/data.xml
+
+
+
+---
+
+✅ Java Code
+
+import org.json.JSONObject;
+import org.json.XML;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+
+public class JsonToXmlConverter {
+
+    public static void main(String[] args) {
+        String sourceFolder = "sourceFolder";               // Replace with your source path
+        String destinationFolder = "destinationFolder";     // Replace with your destination path
+        String fileName = "data.json";                      // Replace with your JSON file name
+
+        Path jsonFilePath = Paths.get(sourceFolder, fileName);
+        Path xmlFilePath = Paths.get(destinationFolder, fileName.replace(".json", ".xml"));
+
+        try {
+            // Read JSON content
+            String jsonContent = new String(Files.readAllBytes(jsonFilePath));
+
+            // Convert JSON to XML
+            JSONObject jsonObject = new JSONObject(jsonContent);
+            String xmlContent = XML.toString(jsonObject, "root"); // "root" is the XML root tag
+
+            // Write XML to file
+            Files.createDirectories(xmlFilePath.getParent()); // Ensure destination folder exists
+            Files.write(xmlFilePath, xmlContent.getBytes());
+
+            System.out.println("Conversion complete. XML file written to: " + xmlFilePath);
+        } catch (IOException e) {
+            System.err.println("File error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Conversion error: " + e.getMessage());
+        }
+    }
+}
+
+
+---
+
+📝 Notes:
+
+Change fileName to read different JSON files dynamically.
+
+To convert multiple JSON files, wrap the logic inside a loop scanning the source folder using Files.list(Paths.get(sourceFolder)).
+
+
+Would you like that version too (convert multiple JSON files automatically)?
+
+
